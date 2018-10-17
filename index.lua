@@ -29,6 +29,11 @@ function async:run(...)
 
 	-- l.print("[%d] setup current id %d", thread.getCurrentThreadId(), self.id)
 	api.current = self
+	local status = coroutine.status(self.co)
+	if status ~= "suspended" then
+		l.print("try to run [%s] coroutine", status)
+		return nil
+	end
 
 	local r
 	if self.firstTime then
@@ -40,8 +45,10 @@ function async:run(...)
 	if not r[1] then
 		l.print("error while resuming async id: %d\n%s\n%s",self.id,r[2],debug.traceback())
 	end
+	table.remove(r, 1)
+	return unpack(r)
 
-	local status = coroutine.status(self.co)
+	-- status = coroutine.status(self.co)
 	-- l.print("[%d] async %d, status %s", thread.getCurrentThreadId(), self.id, status)
 end
 
@@ -107,14 +114,6 @@ api.eventLoop = function()
 		if #handlesForWait > 0 then
 			local result = w.MsgWaitForMultipleObjects(handlesForWait, false, 3, w.QS_ALLINPUT)
 
---[[
-			if result > w.WAIT_OBJECT_0 then
-				--l.print("async result WAIT_OBJECT_0")
-				-- local index = result - w.WAIT_OBJECT_0
-				local info = workerByIndexes[1]
-				local worker = info[1]
-				worker:hitByEvent(info[2])
-				]]
 			if result >= w.WAIT_OBJECT_0 and result <= w.WAIT_OBJECT_LAST then
 
 				-- l.print("result %d", result)
