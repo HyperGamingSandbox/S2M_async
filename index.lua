@@ -88,6 +88,17 @@ local function hitWorkers()
 	end
 end
 
+api.stopAllWorkers = function()
+	local copy = { }
+	for i = 1, #workers  do
+		copy[#copy + 1] = workers[i]
+	end 
+	for i = 1, #copy  do
+		local worker = copy[i]
+		worker:stop()
+	end
+end
+
 api.eventLoop = function()
 	while true do
 		if #workers < 1 then break end
